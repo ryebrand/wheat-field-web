@@ -59,6 +59,10 @@ export const addressDel = (params) => {
 export const submitOrder = (params) => {
   return http.fetchPost('/order/create', params)
 }
+// 生成秒杀令牌，校验验证码
+export const generateToken = (params) => {
+  return http.fetchGet('/order/generateToken', params)
+}
 // 支付 服务端没有************
 export const payMent = (params) => {
   return http.fetchPost('/order/payOrder', params)

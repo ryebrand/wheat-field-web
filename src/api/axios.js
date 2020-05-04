@@ -1,8 +1,8 @@
 import axios from 'axios'
 axios.defaults.timeout = 20000
 axios.defaults.headers.post['Content-Type'] = 'application/x-www=form-urlencoded'
-axios.defaults.baseURL = 'http://47.95.249.44:80'
-// axios.defaults.baseURL = 'http://127.0.0.1:8090'
+// axios.defaults.baseURL = 'http://47.95.249.44:80'
+axios.defaults.baseURL = 'http://127.0.0.1:8090'
 
 // 请求拦截
 axios.interceptors.request.use(function (config) {

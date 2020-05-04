@@ -50,6 +50,7 @@
         // this.$router.push({path: 'goodsDetails/itemId=' + itemId})
       },
       openProduct (itemId) {
+        // isPromo=promo 为秒杀商品
         let type = this.isShowBtn === 'promo' ? 'promo' : '';
         this.$router.push({name: 'goodsDetails', query: {id: itemId, isPromo: type}})
         // window.open('//' + window.location.host + '/#/goodsDetails?id=' + itemId)

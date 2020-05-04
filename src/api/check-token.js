@@ -5,8 +5,8 @@ import { setStore } from '/utils/storage'
 
 const tokenName = 'token'
 const tokenValid = 30
-let refreshUrl = 'http://47.95.249.44:80/user/reToken';
-// let refreshUrl = 'http://127.0.0.1:8090/user/reToken';
+// let refreshUrl = 'http://47.95.249.44:80/user/reToken';
+let refreshUrl = 'http://127.0.0.1:8090/user/reToken';
 let intervalFlag = true;
 
 const checkToken = {

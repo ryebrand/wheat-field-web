@@ -187,7 +187,14 @@
         }
       },
       checkout (itemId) {
-        this.$router.push({path: '/checkout', query: {itemId, num: this.amount}})
+        this.$router.push({
+          path: '/checkout',
+          query: {
+            itemId,
+            num: this.amount,
+            isPromo: this.$route.query.isPromo // isPromo=promo 为秒杀商品
+          }
+        })
       },
       editNum (num) {
         this.amount = num

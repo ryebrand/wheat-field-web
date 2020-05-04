@@ -105,11 +105,20 @@
                     </h4>
                     </div>
                   </div>
+                  <!-- =promo 为秒杀商品-->
                   <y-button class="big-main-btn"
+                            v-if="this.$route.query.isPromo === 'promo'"
                             :classStyle="submit?'disabled-btn':'main-btn'"
                             style="margin: 0;width: 130px;height: 50px;line-height: 50px;font-size: 16px"
                             :text="submitOrder"
-                            @btnClick="_submitOrder">
+                            @btnClick="promoSubmit"
+                  ></y-button>
+                  <y-button class="big-main-btn"
+                            v-else
+                            :classStyle="submit?'disabled-btn':'main-btn'"
+                            style="margin: 0;width: 130px;height: 50px;line-height: 50px;font-size: 16px"
+                            :text="submitOrder"
+                            @btnClick="submitPay">
                   </y-button>
                 </div>
               </div>
@@ -140,17 +149,31 @@
         </div>
       </y-popup>
     </div>
+    <!-- 验证码弹框 -->
+    <el-dialog title="验证码" :visible.sync="dialogVisible" size="tiny" :before-close="closeCode">
+      <div class="code-cont">
+        <img :src="codeImg" alt="验证码">
+        <el-input v-model="codeNum" placeholder="请输入验证码"></el-input>
+      </div>
+      <div slot="footer" class="dialog-footer" style="text-align: center">
+        <el-button @click="closeCode">取 消</el-button>
+        <el-button type="primary" @click="codeSubmit">确 定</el-button>
+      </div>
+    </el-dialog>
+
     <y-footer></y-footer>
   </div>
 </template>
 <script>
-  import { getCartList, addressList, addressUpdate, addressAdd, addressDel, productDet, submitOrder, payMent } from '/api/goods'
+  import http from '/api/public'
+  import { getCartList, addressList, addressUpdate, addressAdd, addressDel, productDet, generateToken,submitOrder, payMent } from '/api/goods'
   import YShelf from '/components/shelf'
   import YButton from '/components/YButton'
   import YPopup from '/components/popup'
   import YHeader from '/common/header'
   import YFooter from '/common/footer'
   import { getStore } from '/utils/storage'
+
   export default {
     data () {
       return {
@@ -175,7 +198,11 @@
         userId: '',
         orderTotal: 0,
         submit: false,
-        submitOrder: '提交订单'
+        submitOrder: '提交订单',
+        dialogVisible: false, // 验证码弹框
+        codeImg: '',
+        codeNum: '', // 验证码值
+        secondKillToken: '' // 秒杀令牌
       }
     },
     computed: {
@@ -245,11 +272,67 @@
           this._addressList()
         })
       },
-      // 提交订单后跳转付款页面
-      _submitOrder () {
+      /**
+       * 秒杀商品
+       */
+      promoSubmit() {
+        this.rule()
+        http.fetchPost('/order/generateVerifyCode', {}).then(res => {
+          this.codeImg = res.data;
+          this.dialogVisible = true;
+        })
+      },
+      /**
+       * 关闭验证弹框
+       */
+      closeCode() {
+        this.submit = false
+        this.submitOrder = '提交订单'
+        this.dialogVisible = false // 验证码弹框
+      },
+      /**
+       * 验证验证码
+       */
+      codeSubmit() {
+        if (!this.codeNum) {
+          this.$message.error('请输入验证码')
+          return false
+        }
+
+        let params = {
+          // params: {
+            itemId: parseInt(this.$route.query.itemId),
+            promoId: this.cartList[0].promoId,
+            verifyCode: this.codeNum
+          // }
+        }
+        http.fetchPostFrom('/order/generateToken', params).then(res => {
+        // generateToken(params).then(res => {
+          if (res.status === 'success') {
+            this.secondKillToken = res.data.secondKillToken
+            this._submitOrder()
+          } else {
+            this.$message.error(res.data.errMsg)
+          }
+        })
+
+        // http.fetchPost('/order/generateToken', {
+        //   itemId: parseInt(this.$route.query.itemId),
+        //   promoId: this.cartList[0].promoId,
+        //   verifyCode: this.codeNum
+        // }).then(res => {
+        //   if (res.status === 'success') {
+        //     this.secondKillToken = res.data.secondKillToken
+        //     this._submitOrder()
+        //   } else {
+        //     this.$message.error('输入验证码错误')
+        //   }
+        // })
+      },
+      // 验证
+      rule() {
         this.submitOrder = '提交订单中...'
         this.submit = true
-        var array = []
         if (this.addressId === '0') {
           this.message('请选择收货地址')
           this.submitOrder = '提交订单'
@@ -262,6 +345,15 @@
           this.submit = false
           return
         }
+      },
+      // 正常商品
+      submitPay() {
+        this.rule()
+        this._submitOrder()
+      },
+      // 提交订单后跳转付款页面
+      _submitOrder () {
+        var array = []
         for (var i = 0; i < this.cartList.length; i++) {
           if (this.cartList[i].checked === '1') {
             array.push(this.cartList[i])
@@ -286,20 +378,38 @@
             orderArr.push(item);
           }
         });
-        submitOrder({
-          userId:this.userId,
-          address: this.addressId,
-          orderItems: orderArr,
-          createDate: newTime,
-          totalPrice: this.checkPrice
-          // nickName: this.nickName,
-          // money: this.money,
-          // info: this.info,
-          // email: this.email,
-          // orderId: this.orderId,
-          // userId: this.userId,
-          // payType: this.type
-        }).then(res => {
+        let url = ''
+        let param = ''
+        if (this.$route.query.isPromo === 'promo') { // 秒杀
+          url = '/order/createPromo'
+          param = {
+            secondKillToken: this.secondKillToken
+          }
+        } else {
+          url = '/order/create'
+          param = {
+            userId:this.userId,
+            address: this.addressId,
+            orderItems: orderArr,
+            createDate: newTime,
+            totalPrice: this.checkPrice
+          }
+        }
+        http.fetchPost(url, param).then(res => {
+        // submitOrder({
+        //   userId:this.userId,
+        //   address: this.addressId,
+        //   orderItems: orderArr,
+        //   createDate: newTime,
+        //   totalPrice: this.checkPrice
+        //   // nickName: this.nickName,
+        //   // money: this.money,
+        //   // info: this.info,
+        //   // email: this.email,
+        //   // orderId: this.orderId,
+        //   // userId: this.userId,
+        //   // payType: this.type
+        // }).then(res => {
           if (res.status === 'success') {
             this.$message.success('下单成功');
             this.$router.push({path: '/home'})
@@ -731,6 +841,16 @@
     font-size: 12px;
     padding-top: 4px;
     line-height: 17px;
+  }
+  .code-cont {
+    display: flex;
+    align-items: center;
+    img {
+      margin-right: 10px;
+    }
+    /deep/.el-input {
+      height: 36px;
+    }
   }
 
   /*支付类型*/
