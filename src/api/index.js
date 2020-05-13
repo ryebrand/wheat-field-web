@@ -17,7 +17,8 @@ export const register = (params) => {
 }
 // 上传图片
 export const upload = (params) => {
-  return http.fetchPost('/member/imgaeUpload', params)
+  // return http.fetchPost('/member/imgaeUpload', params)
+  return http.fetchPostFrom('/user/setUserImg', params)
 }
 // 修改头像
 export const updateheadimage = (params) => {

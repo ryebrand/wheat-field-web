@@ -30,7 +30,7 @@
               <li class="username border-1p">
                 <div class="input">
                   <input type="text"
-                         v-model="registered.gender" placeholder="性别（1=male，2=famale）"
+                         v-model="registered.gender" placeholder="性别"
                          @keyup="registered.gender=registered.gender.replace(/[^\w\.\/]/ig,'')">
                 </div>
               </li>
