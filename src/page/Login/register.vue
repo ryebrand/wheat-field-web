@@ -17,7 +17,7 @@
                 <div class="input">
                   <input type="text"
                          v-model="registered.name" placeholder="用户名"
-                         @keyup="registered.name=registered.name.replace(/[^\w\.\/]/ig,'')">
+                         @keyup="registered.name=registered.name.replace()">
                 </div>
               </li>
               <li class="username border-1p">
@@ -31,7 +31,7 @@
                 <div class="input">
                   <input type="text"
                          v-model="registered.gender" placeholder="性别"
-                         @keyup="registered.gender=registered.gender.replace(/[^\w\.\/]/ig,'')">
+                         @keyup="registered.gender=registered.gender.replace()">
                 </div>
               </li>
               <li>

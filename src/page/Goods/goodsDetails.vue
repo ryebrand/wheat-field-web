@@ -43,7 +43,7 @@
         </div>
         <div class="buy">
           <y-button text="加入购物车"
-                    v-if="this.$route.query.isPromo !== 'promo'"
+                    v-if="!isPromo"
                     @btnClick="addCart(product.itemId,product.price,product.title,product.imgUrl)"
                     classStyle="main-btn"
                     style="width: 145px;height: 50px;line-height: 48px"></y-button>
@@ -94,6 +94,7 @@
         startTime: '',
         endTime: '',
         serverTime: '', // 服务器时间
+        isPromo: '', // 是否为秒杀
       }
     },
     computed: {
@@ -132,6 +133,7 @@
           // 倒计时
           this.startTime = new Date(result.startDate).getTime() / 1000;
           this.endTime = new Date(result.endDate).getTime() / 1000;
+          this.isPromo = result.promoId;
         })
       },
       addCart (itemId, price, name, img) {

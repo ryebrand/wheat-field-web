@@ -138,8 +138,8 @@
         }
         getSearch(params).then(res => {
           if (res.status === 'success') {
-            this.goods = res.result.itemList
-            this.total = res.result.recordCount
+            this.goods = res.data.data
+            this.total = res.data.total
             this.noResult = false
             if (this.total === 0) {
               this.noResult = true

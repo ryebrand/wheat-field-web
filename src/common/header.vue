@@ -39,10 +39,10 @@
                       <!--头像-->
                       <li class="nav-user-avatar">
                         <div>
-                          <span class="avatar" :style="{backgroundImage:'url('+userInfo.info.file+')'}">
+                          <span class="avatar" :style="{backgroundImage:'url('+userInfo.info.imgUrl+')'}">
                           </span>
                         </div>
-                        <p class="name">{{userInfo.info.username}}</p>
+                        <p class="name">{{userInfo.info.name}}</p>
                       </li>
                       <li>
                         <router-link to="/user/orderList">我的订单</router-link>

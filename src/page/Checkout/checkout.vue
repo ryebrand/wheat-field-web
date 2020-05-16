@@ -105,9 +105,9 @@
                     </h4>
                     </div>
                   </div>
-                  <!-- =promo 为秒杀商品-->
+                  <!-- isPromo存在 为秒杀商品-->
                   <y-button class="big-main-btn"
-                            v-if="this.$route.query.isPromo === 'promo'"
+                            v-if="this.isPromo"
                             :classStyle="submit?'disabled-btn':'main-btn'"
                             style="margin: 0;width: 130px;height: 50px;line-height: 50px;font-size: 16px"
                             :text="submitOrder"
@@ -202,7 +202,8 @@
         dialogVisible: false, // 验证码弹框
         codeImg: '',
         codeNum: '', // 验证码值
-        secondKillToken: '' // 秒杀令牌
+        secondKillToken: '', // 秒杀令牌
+        isPromo: '', // 是否为秒杀
       }
     },
     computed: {
@@ -309,7 +310,7 @@
         http.fetchPostFrom('/order/generateToken', params).then(res => {
         // generateToken(params).then(res => {
           if (res.status === 'success') {
-            this.secondKillToken = res.data.secondKillToken
+            this.secondKillToken = res.data
             this._submitOrder()
           } else {
             this.$message.error(res.data.errMsg)
@@ -380,11 +381,52 @@
         });
         let url = ''
         let param = ''
-        if (this.$route.query.isPromo === 'promo') { // 秒杀
+        if (this.isPromo) { // 秒杀
           url = '/order/createPromo'
           param = {
-            secondKillToken: this.secondKillToken
+            promoToken: this.secondKillToken,
+            itemId: this.itemId,
+            promoId: this.cartList[0].promoId,
+            amount: this.$route.query.num,
+            address: this.addressId
+
           }
+          http.fetchPostFrom(url, param).then(res => {
+            // submitOrder({
+            //   userId:this.userId,
+            //   address: this.addressId,
+            //   orderItems: orderArr,
+            //   createDate: newTime,
+            //   totalPrice: this.checkPrice
+            //   // nickName: this.nickName,
+            //   // money: this.money,
+            //   // info: this.info,
+            //   // email: this.email,
+            //   // orderId: this.orderId,
+            //   // userId: this.userId,
+            //   // payType: this.type
+            // }).then(res => {
+            if (res.status === 'success') {
+              this.$message.success('下单成功');
+              this.$router.push({path: '/home'})
+              // setStore('setTime', 90)
+              // setStore('price', this.money)
+              // setStore('isCustom', this.isCustom)
+              // if (this.payType === 1) {
+              //   this.$router.push({path: '/order/alipay'})
+              // } else if (this.payType === 2) {
+              //   this.$router.push({path: '/order/wechat'})
+              // } else if (this.payType === 3) {
+              //   this.$router.push({path: '/order/qqpay'})
+              // } else {
+              //   this.$router.push({path: '/order/alipay'})
+              // }
+            } else {
+              this.submitOrder = '立刻支付'
+              this.submit = false
+              this.$message.error(res.data.errMsg)
+            }
+          })
         } else {
           url = '/order/create'
           param = {
@@ -394,43 +436,44 @@
             createDate: newTime,
             totalPrice: this.checkPrice
           }
+          http.fetchPost(url, param).then(res => {
+            // submitOrder({
+            //   userId:this.userId,
+            //   address: this.addressId,
+            //   orderItems: orderArr,
+            //   createDate: newTime,
+            //   totalPrice: this.checkPrice
+            //   // nickName: this.nickName,
+            //   // money: this.money,
+            //   // info: this.info,
+            //   // email: this.email,
+            //   // orderId: this.orderId,
+            //   // userId: this.userId,
+            //   // payType: this.type
+            // }).then(res => {
+            if (res.status === 'success') {
+              this.$message.success('下单成功');
+              this.$router.push({path: '/home'})
+              // setStore('setTime', 90)
+              // setStore('price', this.money)
+              // setStore('isCustom', this.isCustom)
+              // if (this.payType === 1) {
+              //   this.$router.push({path: '/order/alipay'})
+              // } else if (this.payType === 2) {
+              //   this.$router.push({path: '/order/wechat'})
+              // } else if (this.payType === 3) {
+              //   this.$router.push({path: '/order/qqpay'})
+              // } else {
+              //   this.$router.push({path: '/order/alipay'})
+              // }
+            } else {
+              this.submitOrder = '立刻支付'
+              this.submit = false
+              this.$message.error(res.data.errMsg)
+            }
+          })
         }
-        http.fetchPost(url, param).then(res => {
-        // submitOrder({
-        //   userId:this.userId,
-        //   address: this.addressId,
-        //   orderItems: orderArr,
-        //   createDate: newTime,
-        //   totalPrice: this.checkPrice
-        //   // nickName: this.nickName,
-        //   // money: this.money,
-        //   // info: this.info,
-        //   // email: this.email,
-        //   // orderId: this.orderId,
-        //   // userId: this.userId,
-        //   // payType: this.type
-        // }).then(res => {
-          if (res.status === 'success') {
-            this.$message.success('下单成功');
-            this.$router.push({path: '/home'})
-            // setStore('setTime', 90)
-            // setStore('price', this.money)
-            // setStore('isCustom', this.isCustom)
-            // if (this.payType === 1) {
-            //   this.$router.push({path: '/order/alipay'})
-            // } else if (this.payType === 2) {
-            //   this.$router.push({path: '/order/wechat'})
-            // } else if (this.payType === 3) {
-            //   this.$router.push({path: '/order/qqpay'})
-            // } else {
-            //   this.$router.push({path: '/order/alipay'})
-            // }
-          } else {
-            this.submitOrder = '立刻支付'
-            this.submit = false
-            this.$message.error(res.data.errMsg)
-          }
-        })
+
 
         // let params = {
         //   userId: this.userId,
@@ -502,12 +545,14 @@
       },
       _productDet (itemId) {
         productDet({params: {id: itemId}}).then(res => {
-          let item = res.data
-          item.checked = '1'
-          item.productImg = item.imgUrl
-          item.amount = this.num
-          item.productPrice = item.price
-          this.cartList.push(item)
+          let item = res.data;
+          console.log(item, '---');
+          item.checked = '1';
+          item.productImg = item.imgUrl;
+          item.amount = this.num;
+          item.productPrice = item.price;
+          this.cartList.push(item);
+          this.isPromo = item.promoId;
         })
       }
     },
